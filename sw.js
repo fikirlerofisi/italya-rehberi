@@ -1,8 +1,10 @@
-const CACHE_NAME = 'il-viaggio-v3';
+const CACHE_NAME = 'il-viaggio-v4';
 const ASSETS = [
   './',
   './index.html',
   './kapak.jpg',
+  './Roma.png',
+  './Floransa.png',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',

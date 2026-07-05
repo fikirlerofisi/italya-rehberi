@@ -79,6 +79,14 @@
     border:1px solid var(--ink);
     box-shadow:var(--shadow);
   }
+  .city-emblem{
+    text-align:center;
+    margin:16px 0 0;
+  }
+  .city-emblem img{
+    width:110px;
+    height:auto;
+  }
 
   nav.city-tabs{
     display:flex;
@@ -277,6 +285,11 @@
   <button class="active" data-city="roma">Roma</button>
   <button data-city="firenze">Firenze</button>
 </nav>
+
+<div class="city-emblem">
+  <img id="emblemRoma" src="Roma.png" alt="Kolezyum çizimi">
+  <img id="emblemFirenze" src="Floransa.png" alt="Davut heykeli çizimi" style="display:none;">
+</div>
 
 <div class="day-strip" id="dayStripRoma">
   <button class="day-chip active" data-day="r1">10 Tem</button>
@@ -921,6 +934,8 @@
   const cityBtns = document.querySelectorAll('.city-tabs button');
   const stripRoma = document.getElementById('dayStripRoma');
   const stripFirenze = document.getElementById('dayStripFirenze');
+  const emblemRoma = document.getElementById('emblemRoma');
+  const emblemFirenze = document.getElementById('emblemFirenze');
   const romaDays = ['r1','r2','r3'];
   const firenzeDays = ['f1','f2','f3','f4'];
 
@@ -938,11 +953,15 @@
       if(btn.dataset.city==='roma'){
         stripRoma.style.display='flex';
         stripFirenze.style.display='none';
+        emblemRoma.style.display='inline';
+        emblemFirenze.style.display='none';
         stripRoma.querySelectorAll('.day-chip').forEach((c,i)=>c.classList.toggle('active', i===0));
         showDay('r1');
       } else {
         stripFirenze.style.display='flex';
         stripRoma.style.display='none';
+        emblemFirenze.style.display='inline';
+        emblemRoma.style.display='none';
         stripFirenze.querySelectorAll('.day-chip').forEach((c,i)=>c.classList.toggle('active', i===0));
         showDay('f1');
       }
