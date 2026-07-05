@@ -14,8 +14,8 @@
 <meta name="apple-mobile-web-app-title" content="Il Viaggio">
 <style>
   :root{
-    --parchment:#ece3cf;
-    --parchment-dark:#ddd0af;
+    --parchment:#fbfaf7;
+    --parchment-dark:#e5dfd0;
     --ink:#282420;
     --ink-soft:#5a5248;
     --brick:#a23e2b;
@@ -70,6 +70,14 @@
     font-size:0.92rem;
     color:var(--ink-soft);
     font-style:italic;
+  }
+  header.hero .hero-img{
+    display:block;
+    width:100%;
+    max-width:680px;
+    margin:10px auto 16px;
+    border:1px solid var(--ink);
+    box-shadow:var(--shadow);
   }
 
   nav.city-tabs{
@@ -259,6 +267,7 @@
 <body>
 
 <header class="hero">
+  <img class="hero-img" src="kapak.jpg" alt="İtalya sokakları — dondurma tutan heykel">
   <div class="sub">Kişisel Gezi Notları · Rehbersiz Seyahat</div>
   <h1>Il Viaggio</h1>
   <div class="route">Roma (3 gün) → Firenze (4 gün)</div>
