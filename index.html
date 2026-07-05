@@ -41,10 +41,16 @@
     padding-bottom:40px;
   }
   header.hero{
-    padding:28px 20px 20px;
+    padding:64px 20px 52px;
     text-align:center;
     border-bottom:2px solid var(--ink);
     position:relative;
+    background:
+      linear-gradient(rgba(251,250,247,0.66), rgba(251,250,247,0.66)),
+      url('kapak.jpg') center 35%/cover no-repeat;
+  }
+  header.hero h1, header.hero .sub, header.hero .route{
+    text-shadow:0 1px 6px rgba(251,250,247,0.9);
   }
   header.hero::before, header.hero::after{
     content:"";
@@ -70,14 +76,6 @@
     font-size:0.92rem;
     color:var(--ink-soft);
     font-style:italic;
-  }
-  header.hero .hero-img{
-    display:block;
-    width:100%;
-    max-width:680px;
-    margin:10px auto 16px;
-    border:1px solid var(--ink);
-    box-shadow:var(--shadow);
   }
   .city-emblem{
     text-align:center;
@@ -275,7 +273,6 @@
 <body>
 
 <header class="hero">
-  <img class="hero-img" src="kapak.jpg" alt="İtalya sokakları — dondurma tutan heykel">
   <div class="sub">İmren'in Gezi Notları</div>
   <h1>Il Viaggio</h1>
   <div class="route">Roma (3 gün) → Firenze (4 gün)</div>
