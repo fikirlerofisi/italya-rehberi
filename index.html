@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Il Viaggio">
+<link rel="stylesheet" href="leaflet/leaflet.css">
 <style>
   :root{
     --parchment:#fbfaf7;
@@ -84,6 +85,42 @@
   .city-emblem img{
     width:110px;
     height:auto;
+  }
+  .route-map{
+    height:280px;
+    margin:22px 0 8px;
+    border:1px solid var(--ink);
+    box-shadow:var(--shadow);
+    z-index:0;
+  }
+  .map-caption{
+    font-family:var(--sans);
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:0.66rem;
+    color:var(--ink-soft);
+    margin:26px 0 0;
+  }
+  .map-link{
+    display:inline-block;
+    font-family:var(--sans);
+    font-size:0.8rem;
+    color:var(--brick-dark);
+    margin:6px 0 4px;
+  }
+  .map-pin{
+    background:var(--brick);
+    color:#fff;
+    border-radius:50%;
+    width:26px !important;
+    height:26px !important;
+    line-height:22px;
+    text-align:center;
+    font-family:var(--sans);
+    font-size:12px;
+    font-weight:700;
+    border:2px solid #fff;
+    box-shadow:0 1px 4px rgba(0,0,0,0.45);
   }
 
   nav.city-tabs{
@@ -926,6 +963,115 @@
 
 <footer>Roma & Firenze · Rehbersiz Gezi Notları</footer>
 
+<script src="leaflet/leaflet.js"></script>
+<script>
+  // Günlük rota haritaları: her günün durakları (sıra = listedeki durak numarası)
+  const routes = {
+    r1: [
+      ['Santa Maria Maggiore Bazilikası', 41.8976, 12.4986],
+      ['Colosseum', 41.8902, 12.4922],
+      ['Vittorio Emanuele II Anıtı', 41.8946, 12.4833],
+      ['Trevi Çeşmesi', 41.9009, 12.4833],
+      ['Piazza di Spagna', 41.9058, 12.4823],
+      ['Pantheon', 41.8986, 12.4769],
+      ['Piazza Navona', 41.8992, 12.4731],
+      ['Akşam Yemeği — Navona civarı', 41.8988, 12.4720]
+    ],
+    r2: [
+      ['Vatikan Müzeleri', 41.9065, 12.4536],
+      ['Sistine Şapeli', 41.9029, 12.4545],
+      ['Aziz Petrus Bazilikası', 41.9022, 12.4539],
+      ['Kutsal Melek Kalesi', 41.9031, 12.4663],
+      ['Santa Maria in Trastevere', 41.8894, 12.4695],
+      ['Akşam Yemeği — Trastevere', 41.8886, 12.4706]
+    ],
+    r3: [
+      ['Colosseum, Forum & Palatino', 41.8925, 12.4853],
+      ['Öğle Yemeği — Merkez', 41.8958, 12.4823],
+      ['Piazza del Popolo', 41.9106, 12.4763],
+      ['Pincio Terası → Villa Borghese', 41.9109, 12.4790],
+      ['Borghese Galerisi', 41.9142, 12.4922],
+      ['Akşam Yemeği — Monti', 41.8946, 12.4915]
+    ],
+    f1: [
+      ['Santa Maria del Fiore Katedrali', 43.7731, 11.2560],
+      ['Piazza della Repubblica', 43.7715, 11.2537],
+      ['Piazza della Signoria', 43.7696, 11.2558],
+      ['Ponte Vecchio', 43.7679, 11.2531],
+      ['Santo Spirito Bazilikası', 43.7669, 11.2477],
+      ['Piazzale Michelangelo', 43.7629, 11.2650],
+      ['Akşam Yemeği — Oltrarno', 43.7665, 11.2490]
+    ],
+    f2: [
+      ['Accademia Galerisi', 43.7768, 11.2589],
+      ['Medici Şapelleri & San Lorenzo', 43.7749, 11.2536],
+      ['Bargello Müzesi', 43.7705, 11.2582],
+      ['Signoria → Ponte Vecchio → Santa Croce', 43.7686, 11.2622]
+    ],
+    f3: [
+      ['Uffizi Galerisi', 43.7685, 11.2560],
+      ['Pitti Sarayı', 43.7651, 11.2500],
+      ['Boboli Bahçeleri', 43.7623, 11.2486],
+      ['San Miniato al Monte & Piazzale Michelangelo', 43.7591, 11.2650]
+    ],
+    f4: [
+      ['Santa Lucia İstasyonu — Grand Canal', 45.4415, 12.3210],
+      ['Rialto Köprüsü', 45.4380, 12.3358],
+      ['Piazza San Marco', 45.4341, 12.3388],
+      ['Ara Sokaklar — Castello', 45.4353, 12.3430]
+    ]
+  };
+
+  // Her gün paneline harita kutusu + Google Maps bağlantısı ekle
+  Object.keys(routes).forEach(id => {
+    const section = document.getElementById(id);
+    if (!section) return;
+    const stops = routes[id];
+    const caption = document.createElement('div');
+    caption.className = 'map-caption';
+    caption.textContent = 'Günün Rotası';
+    const mapDiv = document.createElement('div');
+    mapDiv.className = 'route-map';
+    mapDiv.id = 'map-' + id;
+    const link = document.createElement('a');
+    link.className = 'map-link';
+    link.target = '_blank';
+    link.rel = 'noopener';
+    const origin = stops[0][1] + ',' + stops[0][2];
+    const dest = stops[stops.length - 1][1] + ',' + stops[stops.length - 1][2];
+    const waypoints = stops.slice(1, -1).map(s => s[1] + ',' + s[2]).join('|');
+    link.href = 'https://www.google.com/maps/dir/?api=1&origin=' + origin +
+      '&destination=' + dest +
+      (waypoints ? '&waypoints=' + encodeURIComponent(waypoints) : '') +
+      '&travelmode=walking';
+    link.textContent = 'Rotayı Google Maps\'te aç →';
+    section.appendChild(caption);
+    section.appendChild(mapDiv);
+    section.appendChild(link);
+  });
+
+  const dayMaps = {};
+  function ensureMap(id){
+    if (!routes[id] || !document.getElementById('map-' + id)) return;
+    if (dayMaps[id]) { dayMaps[id].invalidateSize(); return; }
+    const map = L.map('map-' + id, { scrollWheelZoom: false });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      crossOrigin: 'anonymous',
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    const latlngs = routes[id].map(s => [s[1], s[2]]);
+    L.polyline(latlngs, { color: '#a23e2b', weight: 3, dashArray: '6 6', opacity: 0.85 }).addTo(map);
+    routes[id].forEach((s, i) => {
+      L.marker([s[1], s[2]], {
+        icon: L.divIcon({ className: 'map-pin', html: String(i + 1), iconSize: [26, 26], iconAnchor: [13, 13] })
+      }).addTo(map).bindPopup(s[0]);
+    });
+    map.fitBounds(latlngs, { padding: [28, 28] });
+    dayMaps[id] = map;
+  }
+</script>
+
 <script>
   // City tab switching
   const cityBtns = document.querySelectorAll('.city-tabs button');
@@ -941,6 +1087,7 @@
       if(p.id===id){ p.style.display='block'; p.classList.add('active'); }
       else { p.style.display='none'; p.classList.remove('active'); }
     });
+    ensureMap(id);
   }
 
   cityBtns.forEach(btn=>{
@@ -987,6 +1134,9 @@
     const firstInPanel = panel.querySelector('.stop-card');
     if(card===firstInPanel){ card.classList.add('open'); }
   });
+
+  // Açılışta görünen günün haritasını kur
+  ensureMap('r1');
 
   // PWA: service worker registration
   if('serviceWorker' in navigator){
