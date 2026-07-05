@@ -1,4 +1,4 @@
-const CACHE_NAME = 'il-viaggio-v8';
+const CACHE_NAME = 'il-viaggio-v9';
 const ASSETS = [
   './',
   './index.html',

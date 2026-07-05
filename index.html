@@ -108,6 +108,9 @@
     color:var(--brick-dark);
     margin:6px 0 4px;
   }
+  .map-pin.map-pin-hotel{
+    background:var(--verde);
+  }
   .map-pin{
     background:var(--brick);
     color:#fff;
@@ -1022,11 +1025,22 @@
     ]
   };
 
+  // Günlerin başlangıç noktası: kalınan otel (Venedik günü trenle varıldığı için hariç)
+  const hotels = {
+    roma: ['Otel — Hotel Tirreno', 41.8964, 12.5000],
+    firenze: ['Otel — Soggiorno Arcobaleno', 43.7783, 11.2530]
+  };
+  const dayHotel = { r1: 'roma', r2: 'roma', r3: 'roma', f1: 'firenze', f2: 'firenze', f3: 'firenze' };
+  function dayPoints(id){
+    const h = hotels[dayHotel[id]];
+    return h ? [h].concat(routes[id]) : routes[id];
+  }
+
   // Her gün paneline harita kutusu + Google Maps bağlantısı ekle
   Object.keys(routes).forEach(id => {
     const section = document.getElementById(id);
     if (!section) return;
-    const stops = routes[id];
+    const stops = dayPoints(id);
     const caption = document.createElement('div');
     caption.className = 'map-caption';
     caption.textContent = 'Günün Rotası';
@@ -1060,11 +1074,18 @@
       crossOrigin: 'anonymous',
       attribution: '&copy; OpenStreetMap'
     }).addTo(map);
-    const latlngs = routes[id].map(s => [s[1], s[2]]);
+    const points = dayPoints(id);
+    const hasHotel = points.length > routes[id].length;
+    const latlngs = points.map(s => [s[1], s[2]]);
     L.polyline(latlngs, { color: '#a23e2b', weight: 3, dashArray: '6 6', opacity: 0.85 }).addTo(map);
-    routes[id].forEach((s, i) => {
+    points.forEach((s, i) => {
+      const isHotel = hasHotel && i === 0;
       L.marker([s[1], s[2]], {
-        icon: L.divIcon({ className: 'map-pin', html: String(i + 1), iconSize: [26, 26], iconAnchor: [13, 13] })
+        icon: L.divIcon({
+          className: isHotel ? 'map-pin map-pin-hotel' : 'map-pin',
+          html: isHotel ? 'H' : String(hasHotel ? i : i + 1),
+          iconSize: [26, 26], iconAnchor: [13, 13]
+        })
       }).addTo(map).bindPopup(s[0]);
     });
     map.fitBounds(latlngs, { padding: [28, 28] });
