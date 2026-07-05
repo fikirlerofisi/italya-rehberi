@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Viaggio — Roma & Firenze Rehberi</title>
+<style>
+  :root{
+    --parchment:#ece3cf;
+    --parchment-dark:#ddd0af;
+    --ink:#282420;
+    --ink-soft:#5a5248;
+    --brick:#a23e2b;
+    --brick-dark:#7c2f20;
+    --verde:#3f5d54;
+    --oro:#b8893d;
+    --card:#f5efe0;
+    --shadow: 0 4px 14px rgba(40,36,32,0.18);
+    --serif: 'Iowan Old Style','Palatino Linotype', Palatino, Georgia, serif;
+    --display: Georgia, 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--parchment);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(184,137,61,0.10), transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(63,93,84,0.08), transparent 45%);
+    color:var(--ink);
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:40px;
+  }
+  header.hero{
+    padding:28px 20px 20px;
+    text-align:center;
+    border-bottom:2px solid var(--ink);
+    position:relative;
+  }
+  header.hero::before, header.hero::after{
+    content:"";
+    position:absolute; left:12px; right:12px; top:6px; bottom:auto;
+    height:1px; background:var(--ink); opacity:0.35;
+  }
+  header.hero h1{
+    font-family:var(--display);
+    font-size:2.1rem;
+    letter-spacing:1px;
+    margin:10px 0 4px;
+    color:var(--brick-dark);
+  }
+  header.hero .sub{
+    font-family:var(--sans);
+    text-transform:uppercase;
+    letter-spacing:3px;
+    font-size:0.68rem;
+    color:var(--ink-soft);
+  }
+  header.hero .route{
+    margin-top:10px;
+    font-size:0.92rem;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+
+  nav.city-tabs{
+    display:flex;
+    justify-content:center;
+    gap:0;
+    margin:18px auto 0;
+    max-width:480px;
+  }
+  nav.city-tabs button{
+    flex:1;
+    font-family:var(--sans);
+    font-size:0.78rem;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    padding:10px 6px;
+    background:transparent;
+    border:none;
+    border-bottom:3px solid var(--parchment-dark);
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  nav.city-tabs button.active{
+    color:var(--brick-dark);
+    border-bottom:3px solid var(--brick);
+    font-weight:600;
+  }
+
+  .day-strip{
+    display:flex;
+    overflow-x:auto;
+    gap:8px;
+    padding:16px 16px 4px;
+    max-width:600px;
+    margin:0 auto;
+  }
+  .day-chip{
+    flex:0 0 auto;
+    font-family:var(--sans);
+    font-size:0.72rem;
+    letter-spacing:0.5px;
+    padding:8px 14px;
+    border-radius:2px;
+    background:var(--card);
+    border:1px solid var(--ink-soft);
+    color:var(--ink-soft);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .day-chip.active{
+    background:var(--verde);
+    color:#f5efe0;
+    border-color:var(--verde);
+  }
+
+  main{
+    max-width:600px;
+    margin:0 auto;
+    padding:8px 16px 20px;
+  }
+  .day-panel{ display:none; }
+  .day-panel.active{ display:block; animation:fade 0.25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .day-title{
+    font-family:var(--display);
+    font-size:1.3rem;
+    color:var(--brick-dark);
+    margin:14px 0 2px;
+    border-bottom:1px solid var(--ink-soft);
+    padding-bottom:6px;
+  }
+  .day-note{
+    font-family:var(--sans);
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+    line-height:1.5;
+  }
+
+  .stop-card{
+    background:var(--card);
+    border:1px solid var(--parchment-dark);
+    box-shadow:var(--shadow);
+    margin-bottom:14px;
+    position:relative;
+  }
+  .stop-head{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 16px;
+    cursor:pointer;
+  }
+  .stop-num{
+    font-family:var(--display);
+    font-size:1.4rem;
+    color:var(--oro);
+    min-width:28px;
+    text-align:center;
+  }
+  .stop-titles{ flex:1; }
+  .stop-titles .name{
+    font-size:1.08rem;
+    font-weight:bold;
+    color:var(--ink);
+  }
+  .stop-titles .loc{
+    font-family:var(--sans);
+    font-size:0.72rem;
+    letter-spacing:0.5px;
+    color:var(--verde);
+    text-transform:uppercase;
+    margin-top:2px;
+  }
+  .chevron{
+    font-size:1.1rem;
+    color:var(--ink-soft);
+    transition:transform 0.2s ease;
+  }
+  .stop-card.open .chevron{ transform:rotate(180deg); }
+
+  .stop-body{
+    display:none;
+    padding:0 16px 18px;
+    border-top:1px dashed var(--parchment-dark);
+  }
+  .stop-card.open .stop-body{ display:block; }
+
+  .stop-body h4{
+    font-family:var(--sans);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    font-size:0.68rem;
+    color:var(--brick);
+    margin:14px 0 6px;
+  }
+  .stop-body p{
+    font-size:0.95rem;
+    line-height:1.55;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .stop-body ul{
+    margin:0 0 10px;
+    padding-left:18px;
+  }
+  .stop-body ul li{
+    font-size:0.93rem;
+    line-height:1.5;
+    margin-bottom:5px;
+  }
+  .practical{
+    background:rgba(63,93,84,0.08);
+    border-left:3px solid var(--verde);
+    padding:8px 12px;
+    font-family:var(--sans);
+    font-size:0.8rem;
+    line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .practical b{ color:var(--verde); }
+
+  .tip-badge{
+    display:inline-block;
+    font-family:var(--sans);
+    font-size:0.68rem;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    background:var(--oro);
+    color:#fff;
+    padding:2px 8px;
+    border-radius:2px;
+    margin-bottom:8px;
+  }
+
+  footer{
+    text-align:center;
+    font-family:var(--sans);
+    font-size:0.7rem;
+    color:var(--ink-soft);
+    padding:20px 16px 6px;
+    letter-spacing:0.5px;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="sub">Kişisel Gezi Notları · Rehbersiz Seyahat</div>
+  <h1>Il Viaggio</h1>
+  <div class="route">Roma (3 gün) → Firenze (4 gün)</div>
+</header>
+
+<nav class="city-tabs">
+  <button class="active" data-city="roma">Roma</button>
+  <button data-city="firenze">Firenze</button>
+</nav>
+
+<div class="day-strip" id="dayStripRoma">
+  <button class="day-chip active" data-day="r1">10 Tem</button>
+  <button class="day-chip" data-day="r2">11 Tem</button>
+  <button class="day-chip" data-day="r3">12 Tem</button>
+</div>
+<div class="day-strip" id="dayStripFirenze" style="display:none;">
+  <button class="day-chip active" data-day="f1">13 Tem</button>
+  <button class="day-chip" data-day="f2">14 Tem</button>
+  <button class="day-chip" data-day="f3">15 Tem</button>
+  <button class="day-chip" data-day="f4">16 Tem · Venedik</button>
+</div>
+
+<main>
+
+<!-- ================= ROMA GÜN 1 ================= -->
+<section class="day-panel active" id="r1">
+  <div class="day-title">Varış Günü — Ücretsiz Roma</div>
+  <div class="day-note"><b>10 Temmuz Cuma · Hotel Tirreno'dan çıkış ~12:00</b><br>Bu gün tamamen dışarıdan gezi ve ücretsiz duraklardan oluşuyor — bilet derdi yok. Önerilen sıra, geri dönüş yapmadan tek yönde ilerleyecek şekilde düzenlendi: Fontana della Barcaccia, Piazza di Spagna'nın içinde olduğu için ayrı durak değil, aynı adımda görülüyor.</div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">1</div><div class="stop-titles"><div class="name">Santa Maria Maggiore Bazilikası</div><div class="loc">~12:15 · Otelden kısa yürüyüş</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Roma'nın dört büyük papalık bazilikasından biri, MS 5. yüzyılda inşa edilmiştir. Efsaneye göre, Ağustos ayında beklenmedik bir kar yağışının işaret ettiği yerde inşa edilmiştir — bu olay her yıl 5 Ağustos'ta çatıdan yapay "kar" yağdırılarak anılır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>İç mekândaki 5. yüzyıldan kalma orijinal mozaikler — Roma'daki en eski Hristiyan mozaiklerinden.</li>
+        <li>Altın kaplamalı tavan — Amerika'dan getirilen ilk altınla yapıldığı söylenir.</li>
+        <li>Bazilikanın sade dış cephesiyle görkemli iç mekân arasındaki tezat.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Giriş:</b> Ücretsiz. <b>Saatler:</b> Her gün 07:00–18:45 civarı.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">2</div><div class="stop-titles"><div class="name">Colosseum</div><div class="loc">~13:15 · Dıştan görüntüleme</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>İmparator Vespasianus tarafından MS 72'de başlatılan ve oğlu Titus döneminde 80 yılında açılan yapı, aslında "Flavius Amfitiyatrosu" adını taşır; "Colosseum" ismi yakınındaki dev Nero heykelinden (Colossus) gelir. Yaklaşık 50-80 bin kişi alan yapıda gladyatör dövüşleri ve hayvan avları düzenlenirdi.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Dış cephedeki üç farklı sütun düzeni (Dor, İyon, Korint) — Roma mimarisinin klasik hiyerarşisi.</li>
+        <li>Arkasındaki Konstantin Takı — Roma'nın en iyi korunmuş zafer taklarından biri, aynı noktadan görülebilir.</li>
+        <li>Yapının farklı yüzeylerinden (özellikle Via di San Gregorio tarafından) fotoğraf için en iyi açı.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Buraya giriş yapmasanız bile çevresinde 20-30 dakika ayırın; Konstantin Takı ve Forum'a bakan tepe de aynı bölgede, ücretsiz gezilebilir.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">3</div><div class="stop-titles"><div class="name">Vittorio Emanuele II Anıtı</div><div class="loc">~14:15 · Piazza Venezia</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>1885-1935 arasında inşa edilen anıt, İtalya'nın ilk kralı Vittorio Emanuele II'ye ve İtalya'nın birleşmesine ithaf edilmiştir. Devasa beyaz mermer görünümü nedeniyle Romalılar tarafından şakayla "yazı makinesi" ya da "düğün pastası" olarak anılır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Alt kısımdaki Meçhul Asker Anıtı — sürekli nöbetçi bekletilen ateş.</li>
+        <li>Merdivenlerin üstünden Roma'nın 360 derece manzarası (asansörle çatıya çıkış ücretlidir, ama alt teraslar ücretsizdir).</li>
+        <li>Anıtın hemen dibindeki Capitoline Tepesi'ne çıkan Michelangelo tasarımı merdiven (Cordonata).</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Giriş:</b> Dış teraslar ücretsiz. Çatıdaki "Roma dal Cielo" asansörü ücretlidir (isteğe bağlı).</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">4</div><div class="stop-titles"><div class="name">Trevi Çeşmesi</div><div class="loc">~15:00 · Piazza di Trevi</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>1732–1762 arasında Nicola Salvi tarafından tasarlanan çeşme, antik bir Roma su kemerinin (Aqua Virgo) bitiş noktasında yer alır. Barok Roma'nın en ünlü simgelerinden biridir.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Merkezdeki Oceanus (Deniz Tanrısı) heykeli ve deniz atlarını kontrol eden Tritonlar.</li>
+        <li>Geleneğe göre sırtınızı çeşmeye dönüp sağ elinizle sol omzunuzun üzerinden suya bir madeni para atmak Roma'ya dönüşü garanti eder.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Öğleden sonra oldukça kalabalık olur; kısa süre kalıp devam etmek, akşam dönüşünde tekrar uğramak isterseniz daha sakin olabilir.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">5</div><div class="stop-titles"><div class="name">Piazza di Spagna & Fontana della Barcaccia</div><div class="loc">~15:45 · Trevi'den 10 dk yürüyüş</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>135 basamaklı İspanyol Merdivenleri, 1723–1725 arasında yapılmış ve Piazza di Spagna'yı yukarıdaki Trinità dei Monti Kilisesi'ne bağlar. Merdivenin dibindeki Barcaccia Çeşmesi ise muhtemelen Bernini'nin babası Pietro Bernini tarafından, 1598'deki büyük Tiber taşkınında meydana sürüklenen bir tekneden esinlenerek, batık bir gemi formunda tasarlanmıştır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Barcaccia'nın alçak, batık tekne formu — meydandaki su basıncının düşük olması nedeniyle bilinçli bir mühendislik çözümü.</li>
+        <li>Merdivenin tepesinden Roma'ya bakan manzara.</li>
+        <li>Meydana adını veren, yakındaki eski İspanyol Büyükelçiliği binası.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Not:</b> Basamaklarda oturmak/yemek yemek yasaktır, para cezası uygulanabilir.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">6</div><div class="stop-titles"><div class="name">Pantheon</div><div class="loc">~16:45 · Dıştan görüntüleme</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>MS 126'da İmparator Hadrianus tarafından yeniden inşa edilen yapı, dünyanın en iyi korunmuş antik Roma binasıdır. 7. yüzyılda kiliseye dönüştürüldüğü için yıkılmaktan kurtulmuştur.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Girişteki devasa granit sütunlar — Mısır'dan getirilmiştir.</li>
+        <li>Kubbenin dıştan bile fark edilen kusursuz oranları — yüksekliği çapına eşittir.</li>
+        <li>Meydandaki obelisk ve çeşme — farklı dönemlerin bir arada bulunduğu tipik bir Roma sahnesi.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> İçeri girmek isterseniz giriş ücretsizdir ama saatleri değişkendir; dıştan bakmak için özel bir zaman kısıtı yoktur.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">7</div><div class="stop-titles"><div class="name">Piazza Navona</div><div class="loc">~17:15 · Pantheon'a 5 dk yürüyüş</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>1. yüzyılda İmparator Domitianus'un yaptırdığı bir stadyumun üzerine kurulmuştur — meydanın uzun, oval şekli antik atletizm pistinden gelir. Barok dönemde Roma'nın en gösterişli meydanlarından birine dönüştürülmüştür.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Bernini'nin Fontana dei Quattro Fiumi (Dört Nehir Çeşmesi) — Nil, Ganj, Tuna ve Rio de la Plata'yı simgeleyen heykeller.</li>
+        <li>Meydana bakan Sant'Agnese in Agone Kilisesi — Borromini imzalı Barok cephe.</li>
+        <li>Meydandaki sokak ressamları ve sanatçılar — akşamüzeri en canlı saatleri.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Meydan çevresindeki restoranlar turistik ve pahalı olma eğilimindedir; birkaç sokak içeri girmek genelde daha iyi fiyat/lezzet dengesi sunar.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">8</div><div class="stop-titles"><div class="name">Akşam Yemeği</div><div class="loc">~19:30 · Piazza Navona civarı</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Öneri</h4>
+      <p>Piazza Navona'nın hemen çevresindeki dar sokaklar (Via della Cuccagna, Via del Governo Vecchio) turistik meydan restoranlarına göre daha otantik ve uygun fiyatlı seçenekler sunar.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ROMA GÜN 2 ================= -->
+<section class="day-panel" id="r2">
+  <div class="day-title">Vatikan</div>
+  <div class="day-note"><b>11 Temmuz Cumartesi · Metro ile Vatikan'a</b><br>Cumartesi günü Vatikan Müzeleri normal saatlerinde (08:00–20:00), bu yüzden 09:00 girişiniz sorunsuz. Çarşamba sabahı Papa duyurusu bu gün için geçerli değil. 09:00–14:30 arası Müzeler+Sistine için bolca zaman var; aradaki boşlukta öğle yemeği için Vatikan çevresindeki (Borgo Pio sokağı) restoranlar pratik bir seçenek.</div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">1</div><div class="stop-titles"><div class="name">Vatikan Müzeleri</div><div class="loc">09:00 · Viale Vaticano</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Yüzyıllar boyunca Papaların topladığı sanat eserlerinden oluşan koleksiyon, 54 galeriye yayılır ve dünyanın en büyük müze komplekslerinden biridir. Rota; heykel avluları, haritalar galerisi ve Raphael Odaları üzerinden Sistine Şapeli'ne çıkar.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Harita Galerisi (Galleria delle Carte Geografiche) — 16. yüzyılda İtalya bölgelerinin elle boyanmış devasa haritaları.</li>
+        <li>Raphael Odaları, özellikle "Atina Okulu" freski — Rönesans'ın felsefe ve bilime bakışını özetler.</li>
+        <li>Pigna Avlusu'ndaki dev bronz çam kozalağı heykeli.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical">
+        <b>Saatler:</b> Pzt–Cmt 08:00–20:00 (son giriş 18:00).<br>
+        <b>Süre:</b> Sistine Şapeli'ne kadar yürüyüş 20-30 dakika sürebilir; toplam 3-4 saat ayırın.<br>
+        <b>İpucu:</b> Açılışta (08:00) ya da öğleden sonra 15:00 sonrası en sakin saatler. Kıyafet kuralı: omuz ve dizler kapalı olmalı.
+      </div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">2</div><div class="stop-titles"><div class="name">Sistine Şapeli</div><div class="loc">Vatikan Müzeleri rotasının sonunda</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Papa IV. Sixtus için 1473–1481 arasında inşa edilen şapel, hem Papa'nın özel ibadet mekânı hem de yeni Papa'nın seçildiği "konklav" toplantılarının yapıldığı yerdir. Boyutları kasıtlı olarak Eski Ahit'te tarif edilen Süleyman Mabedi ile aynı ölçülerde tasarlanmıştır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Tavan freski (1508–1512): Michelangelo'nun dört yıl sırt üstü yatarak tamamladığı "Adem'in Yaratılışı" dahil Genesis sahneleri.</li>
+        <li>Altar duvarındaki "Son Yargı" — Michelangelo'nun yıllar sonra, çok daha karamsar bir üslupla yaptığı dev fresk.</li>
+        <li>Yan duvarlardaki 15. yüzyıl freskleri (Botticelli, Perugino gibi ustalardan) — genelde tavan gölgesinde kalır ama aynı derecede değerlidir.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical">
+        <b>Önemli:</b> İçeride fotoğraf ve video kesinlikle yasak (restorasyonu finanse eden anlaşma gereği). Sessiz kalınması istenir.<br>
+        <b>İpucu:</b> Kalabalığı azaltmak için tavana bakarken bir kenara, yan duvar dibine çekilin.
+      </div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">3</div><div class="stop-titles"><div class="name">Aziz Petrus Bazilikası</div><div class="loc">14:30 · Piazza San Pietro</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Hristiyanlığın en büyük kilisesi, Aziz Petrus'un gömülü olduğuna inanılan yer üzerine inşa edilmiştir. Bugünkü bazilika 1506–1626 arasında inşa edilmiş, tasarımında Bramante, Michelangelo, Bernini gibi dönemin en büyük ustaları görev almıştır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Michelangelo'nun Pietà heykeli (girişte sağda, camekan arkasında) — sanatçının imzasını taşıyan tek eseri.</li>
+        <li>Bernini'nin bronz Baldachin'i (ana altarın üzerindeki dev gölgelik) — 29 metre yüksekliğinde.</li>
+        <li>Kubbe (Michelangelo tasarımı) — isteğe bağlı tırmanışla Roma'nın en iyi panoramik manzarası.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical">
+        <b>Saatler:</b> Yaz 07:00–19:00.<br>
+        <b>İpucu:</b> Giriş ücretsizdir ama güvenlik kontrolü nedeniyle sıra olabilir; kıyafet kuralına dikkat edin (omuz ve dizler kapalı).
+      </div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">4</div><div class="stop-titles"><div class="name">Kutsal Melek Kalesi & Köprüsü</div><div class="loc">16:00 · Castel Sant'Angelo</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>MS 139'da İmparator Hadrianus'un ailesi için mozole olarak yaptırılan yapı, Ortaçağ'da Papaların sığınağı ve kalesine, ardından hapishaneye dönüştürülmüştür. Vatikan'a bağlanan gizli bir geçit (Passetto di Borgo) sayesinde Papalar tehlike anında buraya kaçabilirdi. Kulenin tepesindeki melek heykeli, 590'da veba salgınının bittiğini müjdeleyen bir görümle ilişkilendirilir.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Hadrianus döneminden kalma orijinal sarmal rampa — lahitlerin taşınması için tasarlanmış.</li>
+        <li>Ponte Sant'Angelo üzerindeki on melek heykeli — Bernini atölyesi eseri.</li>
+        <li>Tepedeki teras — Vatikan kubbesi ve Tiber Nehri'nin en iyi manzara noktalarından biri, özellikle gün batımına yakın saatlerde.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Saatler:</b> Her gün 09:00–19:30, son giriş 18:30.<br><b>İpucu:</b> 16:00 girişiyle kapanışa kadar rahatça 2-2.5 saat vaktiniz olur — hem müzeyi hem terası sakin gezebilirsiniz.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">5</div><div class="stop-titles"><div class="name">Santa Maria in Trastevere Bazilikası</div><div class="loc">18:00 · Trastevere</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Roma'da Meryem Ana'ya adanmış ilk kilise olduğu kabul edilir, 3. yüzyıla kadar uzanan bir geçmişi vardır. Bugünkü hali büyük ölçüde 12. yüzyıldan kalmadır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Apsisdeki altın mozaikler — 12. ve 13. yüzyıldan, Meryem ve İsa'yı taht üzerinde tasvir eder.</li>
+        <li>Kilisenin önündeki meydan ve çeşme — Trastevere'nin akşamları en canlı buluşma noktası.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Not:</b> Castel Sant'Angelo'dan Trastevere'ye yürüyüş yaklaşık 25-30 dakika sürer; isterseniz taksi/otobüs de kullanabilirsiniz. Giriş ücretsizdir.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">6</div><div class="stop-titles"><div class="name">Akşam Yemeği</div><div class="loc">~19:30 · Trastevere Bölgesi</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Öneri</h4>
+      <p>Trastevere, dar taş sokakları ve sarmaşıklı cepheleriyle Roma'nın en atmosferik akşam yemeği bölgelerinden biridir. Ana meydanlardan (Piazza Trilussa, Piazza di Santa Maria) biraz uzaklaşan ara sokaklar genelde daha otantik seçenekler sunar.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ROMA GÜN 3 ================= -->
+<section class="day-panel" id="r3">
+  <div class="day-title">Antik Roma → Popolo → Borghese</div>
+  <div class="day-note"><b>12 Temmuz Pazar</b><br><b style="color:var(--verde);">✓ Borghese Galerisi bileti alındı — 16:00 seansı.</b><br>Kolezyum/Forum gezisi ~12:30-13:00 civarı biter. Öğle yemeğinden sonra metro/yürüyüşle Piazza del Popolo'ya geçip, Pincio Tepesi üzerinden Villa Borghese parkı içinden yürüyerek (~20-25 dk, gölgeli ve manzaralı) 16:00 seansına yetişebilirsiniz.</div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">1</div><div class="stop-titles"><div class="name">Colosseum, Roma Forumu, Palatino Tepesi</div><div class="loc">09:30</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Tek bilet üçünü birden kapsar (24 saat geçerli). Colosseum gladyatör dövüşlerinin sahnesiydi; Forum bin yılı aşkın süre Roma'nın siyasi kalbiydi; Palatine Tepesi ise Roma'nın efsanevi kuruluş yeri ve imparatorluk saraylarının merkeziydi.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Colosseum'da hypogeum (yeraltı) bölümü ve üst katlardan panoramik görünüm.</li>
+        <li>Palatine Tepesi'nden Forum ve Circus Maximus'a hakim manzara noktaları — günün en sakin, gölgeli köşesi.</li>
+        <li>Forum'da Titus Takı, Curia Julia (antik Senato binası) ve Maxentius Bazilikası'nın devasa kemerleri.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical">
+        <b>Süre:</b> Üçü birlikte rahat bir tempoda 3-3.5 saat.<br>
+        <b>Not:</b> Forum'dan çıkışta yeniden giriş yapılamaz, rotayı tek seferde planlayın. Su bulundurun, gölge azdır.<br>
+        <b>İpucu:</b> Ücretsiz "MyColosseum" uygulaması GPS destekli sesli anlatım sunar.
+      </div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">2</div><div class="stop-titles"><div class="name">Öğle Yemeği</div><div class="loc">~13:00 · Merkez</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Öneri</h4>
+      <p>Popolo'ya doğru ilerleyen rotada, Via del Corso çevresinde veya Piazza del Popolo'nun kendisinde hafif bir öğle yemeği molası iyi bir seçenek — akşam zaten Monti'de doyurucu bir yemek planlıyorsunuz.</p>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">3</div><div class="stop-titles"><div class="name">Piazza del Popolo</div><div class="loc">~14:15</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Roma'nın kuzey kapısıydı — antik dönemde Via Flaminia üzerinden şehre girenlerin karşılaştığı ilk meydan. Ortasındaki Mısır obeliski, İmparator Augustus tarafından MÖ 10'da buraya getirilmiştir.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Santa Maria del Popolo Kilisesi — içinde ücretsiz iki Caravaggio tablosu barındırır (Aziz Petrus'un Çarmıha Gerilişi, Şam Yolunda Aziz Pavlus'un Dönüşümü).</li>
+        <li>Meydanın simetrik ikiz kiliseleri (Santa Maria dei Miracoli ve Santa Maria in Montesanto).</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Kilisenin girişi ücretsizdir, kısa bir mola için idealdir.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">4</div><div class="stop-titles"><div class="name">Pincio Terası → Villa Borghese</div><div class="loc">~14:45 · Yürüyüş</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Piazza del Popolo'nun hemen yanındaki merdivenlerden çıkılan Pincio Tepesi, 19. yüzyılda düzenlenmiş bir teras parkıdır ve Villa Borghese'nin güney girişine bağlanır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Pincio Terası'ndan Piazza del Popolo ve St. Peter's kubbesine bakan ünlü manzara.</li>
+        <li>Yürüyüş yolunda rastlayacağınız Su Saati (Orologio ad Acqua) ve küçük göl.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Süre:</b> Pincio'dan Galeri'ye yürüyüş ortalama 20-25 dakika. 16:00 seansına yetişmek için Popolo'dan en geç 15:30 gibi harekete geçmenizi öneririz.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">5</div><div class="stop-titles"><div class="name">Borghese Galerisi & Villa Borghese</div><div class="loc">16:00</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>17. yüzyılda Kardinal Scipione Borghese'nin özel sanat koleksiyonunu sergilemek için inşa edilmiş villa, bugün Bernini, Caravaggio ve Raphael'in başyapıtlarını barındırır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Bernini'nin "Apollo ve Daphne" ile "Proserpina'nın Kaçırılışı" heykelleri — mermerin adeta ete dönüştüğü, hareketi donduran ustalık.</li>
+        <li>Caravaggio Odası — dramatik ışık-gölge tekniğinin en yoğun örnekleri.</li>
+        <li>Galeri çıkışında Villa Borghese Bahçeleri'nde kısa bir yürüyüş — özellikle Piazza di Siena ve göl çevresi.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical">
+        <b>Kesinlikle önemli:</b> Giriş sadece önceden alınmış zaman damgalı biletle mümkündür, kapıda satış yapılmaz. Ziyaret süresi 2 saatle sınırlıdır (16:00-18:00).<br>
+        <b>Not:</b> Büyük çanta/sırt çantası vestiyere bırakılmalıdır. Fotoğraf flaşsız serbesttir.
+      </div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">6</div><div class="stop-titles"><div class="name">Akşam Yemeği</div><div class="loc">~19:30 · Monti Bölgesi</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Öneri</h4>
+      <p>Borghese'den Monti'ye metro veya taksi ile ~20 dakika. Monti, Kolezyum'a yakın, otantik ve bohem bir mahalle — birkaç öneri:</p>
+      <ul>
+        <li><b>Trattoria Monti</b> — Marche mutfağından İtalyan lezzetleri, sıcak ve samimi bir atmosfer. Rezervasyon şart, akşam 20:00'den önce açılmıyor.</li>
+        <li><b>La Taverna dei Monti</b> — klasik Roma mutfağı (carbonara, cacio e pepe), mahallenin en şirin köşelerinden birinde.</li>
+        <li><b>Cuoco e Camicia</b> — daha zarif bir atmosfer, mevsimsel ve yaratıcı menü, özel bir akşam için uygun.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Monti'nin ana sokakları Via del Boschetto ve Via dei Serpenti — yürüyerek gezerken çok sayıda küçük trattoria ve bar keşfedebilirsiniz.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FIRENZE GÜN 1 ================= -->
+<section class="day-panel" id="f1" style="display:none;">
+  <div class="day-title">Varış Günü — Biletsiz Floransa</div>
+  <div class="day-note"><b>13 Temmuz Pazartesi · 08:30 hızlı trenle Floransa'ya, ~11:00 otel (Soggiorno Arcobaleno)</b><br>Bugün zaten Pazartesi olduğu için Uffizi, Accademia, Bargello gibi büyük müzeler kapalı — bu yüzden tamamen biletsiz/dış mekân bir gün planlamak hem zorunluluk hem de rahat bir başlangıç için ideal. Check-in sonrası öğleden itibaren başlayabilirsiniz.</div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">1</div><div class="stop-titles"><div class="name">Santa Maria del Fiore Katedrali</div><div class="loc">~13:00 · Piazza del Duomo</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>1296'da başlanan Santa Maria del Fiore Katedrali, 1436'da Filippo Brunelleschi'nin mühendislik harikası kubbesiyle tamamlanmıştır — o dönem için imkânsız sayılan bir açıklığı, iskele kullanmadan iç içe iki kabuk tekniğiyle kapatmıştır. Karşısındaki sekizgen Vaftizhane ise Floransa'nın en eski dini yapılarından biridir (11-13. yy) ve Dante dahil pek çok ünlü Floransalı burada vaftiz edilmiştir.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>İç mekân dıştan beklenenin aksine oldukça sade — Floransa zenginliğini cephede sergilemeyi tercih etmiş.</li>
+        <li>Zemindeki geometrik mermer mozaik döşeme — 40'tan fazla panelde İncil sahneleri ve armalar işlenmiş.</li>
+        <li>Paolo Uccello'nun 1443 tarihli saati — "ora italica" (İtalyan saati) sistemine göre çalışır, günün 24. saati gün batımında biter.</li>
+        <li>Kubbenin içinden görünen Vasari ve Zuccari'nin "Son Yargı" freski.</li>
+        <li>Katedralin yeşil-pembe-beyaz mermer cephesi — aslında 19. yüzyılda tamamlanmıştır, orijinal değildir.</li>
+        <li>Vaftizhane'nin "Cennetin Kapıları" (doğu kapısı, dıştan) — Ghiberti'nin 27 yılda tamamladığı, Michelangelo'nun bu ismi verdiği altın kabartmalı bronz kapı.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Giriş:</b> Katedralin nefi ücretsizdir, bilet gerekmez — Pazartesi-Cumartesi 10:15-15:45 arası açık (13:00 gibi bir varışla sorun yok). Kubbe/müze/kule/vaftizhane içi ayrı ücretli pass gerektirir ve bu gün planınızda yok. <b>Kıyafet kuralı:</b> omuz ve dizler kapalı olmalı.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">2</div><div class="stop-titles"><div class="name">Piazza della Repubblica</div><div class="loc">~13:45</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Roma döneminde şehrin forumu burada yer alıyordu. 19. yüzyıl sonunda "Roma'yı yeniden yaratmak" adı altında yeniden düzenlenen meydan, dönemin Floransa'sının modernleşme hırsını yansıtır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Zafer Takı'nın üzerindeki "Floransa'nın Antik Merkezi Yüzyıllardır Süren Sefaletten Yeni Bir Hayata Kavuşturuldu" yazısı — 19. yüzyıl kentsel dönüşümünün özeti.</li>
+        <li>Meydandaki tarihi Caffè Gilli ve Caffè Paszkowski — 19. yüzyıldan kalma edebiyat kahveleri.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">3</div><div class="stop-titles"><div class="name">Piazza della Signoria & Loggia dei Lanzi</div><div class="loc">~14:15</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Floransa Cumhuriyeti'nin siyasi merkezi olan meydan, açık hava heykel müzesi gibidir. Palazzo Vecchio, Medici ailesinin de bir dönem ikamet ettiği belediye binasıdır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Michelangelo'nun David heykelinin kopyası — orijinal konumunda (Accademia'ya taşınmadan önce burada duruyordu).</li>
+        <li>Loggia dei Lanzi'deki heykel koleksiyonu — Cellini'nin "Perseus, Medusa'nın Başıyla" eseri dahil, tamamen ücretsiz gezilebilir açık galeri.</li>
+        <li>Neptün Çeşmesi.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Loggia dei Lanzi'yi çoğu ziyaretçi atlıyor — mutlaka birkaç dakika ayırın, tamamen ücretsiz ve genelde sakin.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">4</div><div class="stop-titles"><div class="name">Ponte Vecchio</div><div class="loc">~14:45</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Floransa'nın en eski köprüsü (1345), üzerinde dükkanların bulunduğu tek Arno köprüsüdür. II. Dünya Savaşı'nda Almanların şehri terk ederken yıkmadığı tek köprü olması nedeniyle özel bir sembolik değeri vardır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Köprü üzerindeki kuyumcu dükkanları — 16. yüzyılda Medici Dükü, kötü kokan kasap ve tabakhaneleri kaldırıp yerine kuyumcuları yerleştirmiştir.</li>
+        <li>Üstteki Vasari Koridoru'nun dışarıdan görülen pencereleri — Medicilerin Palazzo Vecchio'dan Pitti Sarayı'na halka görünmeden geçebildiği gizli geçit.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">5</div><div class="stop-titles"><div class="name">Santo Spirito Bazilikası</div><div class="loc">~15:15 · Piazza Santo Spirito</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Ponte Vecchio'yu geçtiğinizde girdiğiniz Oltrarno ("Arno'nun ötesi"), turist kalabalığından uzak, zanaatkâr atölyeleri ve yerel dokusuyla Floransa'nın en otantik mahallesidir — ve tam kalbinde bu bazilika yer alır. Brunelleschi tarafından 1444'te tasarımına başlanan yapı, mimarın ölümünden sonra tamamlanmıştır; cephesi hiç kaplanmadan sade bırakılmıştır. Bernini bu kiliseyi "dünyanın en güzel kilisesi" olarak nitelendirmiştir.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>İç mekânın kusursuz Rönesans geometrisi — Brunelleschi'nin matematiksel oranlarının en saf uygulamalarından biri, dıştaki sadeliğin aksine içeride ferah ve aydınlık bir hava.</li>
+        <li>Filippino Lippi'nin "Nerli Ailesi ile Madonna ve Çocuk" tablosu — sağ transeptte.</li>
+        <li>Sakristi'de genç Michelangelo'nun (17 yaşında) yaptığı ahşap Çarmıh — manastır hastanesinde ceset inceleme izni karşılığında keşişlere hediye ettiği eser (görmek için küçük bir ek ücret var, ana kiliseye giriş ücretsiz).</li>
+        <li>38 yan şapel — her biri farklı bir Rönesans ustasının eseriyle süslenmiş.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Giriş:</b> Ana kilise ücretsizdir. <b>Saatler:</b> Pazartesi–Cumartesi 10:00–13:00 ve 15:00–18:00, Çarşamba kapalı (13'ü Pazartesi olduğu için sorun yok). <b>İpucu:</b> Piazza Santo Spirito, yerel halkın akşamüzeri buluşma noktası — kısa bir kahve molası için de ideal.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">6</div><div class="stop-titles"><div class="name">Piazzale Michelangelo — Gün Batımı</div><div class="loc">~19:45</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>19. yüzyılda düzenlenen meydan, Floransa'nın tüm siluetini (Duomo, Palazzo Vecchio, Arno Nehri) gören en ünlü manzara noktasıdır. Ortasında David'in bronz bir kopyası bulunur.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Gün batımında altın rengine bürünen Duomo kubbesi ve şehir silueti.</li>
+        <li>Hemen üstündeki San Miniato al Monte Kilisesi — daha az kalabalık, Romanesk mimarinin güzel bir örneği.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Ponte Vecchio'dan yürüyerek 20-25 dakika, yokuşludur. Temmuzda gün batımı ~20:45 civarı — yer kapmak için en az 45 dakika önce gidin.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">7</div><div class="stop-titles"><div class="name">Akşam Yemeği</div><div class="loc">~21:00 · Oltrarno civarı</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Öneri</h4>
+      <p>Piazzale Michelangelo'dan inerken Oltrarno'daki San Niccolò sokağı, yerel trattoria ve şarap barlarıyla akşam yemeği için keyifli bir seçenektir.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FIRENZE GÜN 2 ================= -->
+<section class="day-panel" id="f2" style="display:none;">
+  <div class="day-title">Michelangelo & Medici</div>
+  <div class="day-note"><b>14 Temmuz Salı</b><br>Accademia, Medici Şapelleri ve Bargello aynı müze grubuna ait — üçü de Salı-Pazar 08:15-18:50 saatlerinde açık. Zaman damgalı giriş zorunlu.</div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">1</div><div class="stop-titles"><div class="name">Accademia Galerisi</div><div class="loc">08:30 · Via Ricasoli</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>1784'te sanat öğrencileri için kurulan akademi, 1873'ten beri Michelangelo'nun David heykelinin ana sergilendiği yerdir. Heykel, 1501-1504 arasında tek bir mermer bloktan, sanatçının henüz 20'li yaşlarındayken yontulmuştur.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>David'in yüz ifadesi — savaş öncesi gerilim anını yansıtır; klasik dönemdeki zafer sonrası tasvirlerden farklı olarak Golyat'la karşılaşmadan önceki anı gösterir.</li>
+        <li>Koridordaki "Tutsaklar" (Prigioni) heykel serisi — Michelangelo'nun mermerden "kurtarmaya çalıştığı" figürleri yarım bıraktığı, bilinçli olarak bitmemiş eserler.</li>
+        <li>David'in orantısız büyük elleri ve başı — heykel aslında katedral çatısına, yukarıdan bakılmak üzere tasarlanmıştı; yer seviyesinde bu abartı fark edilir.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Süre:</b> 1-1.5 saat yeterli. Erken (08:30) girişle en sakin saatte gezersiniz.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">2</div><div class="stop-titles"><div class="name">Medici Şapelleri & San Lorenzo Bazilikası</div><div class="loc">12:30 · Piazza San Lorenzo</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>San Lorenzo Bazilikası, Medici ailesinin resmi kilisesi ve mezar anıtlarının bulunduğu yerdir — Michelangelo hem mimari hem de heykel tasarımlarıyla katkıda bulunmuştur.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Medici Kabri Şapeli (Cappelle Medicee) — Michelangelo'nun "Gece" ve "Gündüz", "Şafak" ve "Alacakaranlık" alegorik heykelleri.</li>
+        <li>Biblioteca Laurenziana'nın Michelangelo tasarımı merdiveni — mimarlıkta neredeyse heykelsi bir yaklaşım.</li>
+        <li>Bazilikanın kasıtlı olarak kaplamasız bırakılmış kaba tuğla cephesi — Floransa'da bitmemiş pek çok kilise cephesinden biri.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">3</div><div class="stop-titles"><div class="name">Bargello Müzesi</div><div class="loc">15:00 · Via del Proconsolo</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>1255'te inşa edilen, Floransa'nın en eski kamu binası. Zaman içinde belediye başkanlığı, polis karargahı ve hapishane olarak kullanılmış, 1865'te İtalya'nın ilk ulusal müzesine dönüştürülmüştür. Uffizi ve Accademia'ya göre çok daha az kalabalıktır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Donatello'nun bronz David'i — Rönesans'ta çıplak bir erkek figürünü konu alan ilk büyük heykel.</li>
+        <li>Michelangelo'nun Bacchus'u — sanatçının Roma'ya gitmeden önceki genç dönem eseri.</li>
+        <li>Ortaçağ silah ve zırh koleksiyonu, avlu ve merdivenler — binanın kendisi de bir sergi parçası.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Süre:</b> 1.5-2 saat. <b>İpucu:</b> Bargello genelde en sakin büyük müze — David ve Bacchus'u neredeyse yalnız başınıza görebilirsiniz.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">4</div><div class="stop-titles"><div class="name">Akşamüstü: Signoria → Ponte Vecchio → Santa Croce</div><div class="loc">~17:00</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Öneri</h4>
+      <p>Bargello'dan çıkışta (Piazza della Signoria'ya 3 dakika) Uffizi'nin dış cephesini görüp Ponte Vecchio'da kısa bir mola verin, ardından Santa Croce bölgesine yönelin.</p>
+      <h4>Santa Croce Bazilikası</h4>
+      <p>Floransa'nın en büyük Fransisken kilisesi, aynı zamanda "İtalyanların Panteonu" olarak da anılır — Michelangelo, Galileo, Machiavelli ve Rossini burada gömülüdür.</p>
+      <ul>
+        <li>Michelangelo'nun mezar anıtı (Vasari tasarımı) ve Galileo Galilei'nin mezarı.</li>
+        <li>Giotto'nun atölyesine ait freskler (Bardi ve Peruzzi Şapelleri).</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Not:</b> Kilise genelde ~17:00-17:30'da son giriş alır; yetişemezseniz dış cephesi ve önündeki meydan da tek başına gezmeye değer. Akşam yemeği için Santa Croce çevresi iyi bir seçenek.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FIRENZE GÜN 3 ================= -->
+<section class="day-panel" id="f3" style="display:none;">
+  <div class="day-title">Uffizi & Pitti</div>
+  <div class="day-note"><b>15 Temmuz Çarşamba</b><br>Uffizi Salı–Pazar 08:15–18:30, Pitti Sarayı & Boboli Bahçeleri aynı saatlerde. Uffizi ve Pitti arası Ponte Vecchio üzerinden 10 dakikalık keyifli bir yürüyüş.</div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">1</div><div class="stop-titles"><div class="name">Uffizi Galerisi</div><div class="loc">09:30 · Piazzale degli Uffizi</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>1560'ta Medici ailesinin idari ofisleri ("uffizi" = ofisler) olarak Giorgio Vasari tarafından tasarlanmıştır. Zamanla ailenin sanat koleksiyonunun sergilendiği galeriye dönüşmüş, İtalyan Rönesansı'nın en önemli koleksiyonlarından birini barındırır hale gelmiştir.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Botticelli Salonu (10-14 numaralı odalar): "Venüs'ün Doğuşu" ve "İlkbahar" — Rönesans'ın en tanınan iki tablosu.</li>
+        <li>Leonardo da Vinci'nin "Müjde" tablosu (35 numaralı oda).</li>
+        <li>Michelangelo'nun "Doni Tondo"su — sanatçının nadir bulunan tuval/pano resimlerinden biri.</li>
+        <li>Caravaggio'nun "Medusa" ve "Bacchus" eserleri — dramatik ışık-gölge tekniğinin öncüsü.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Süre:</b> 2.5-3 saat rahat bir gezi için.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">2</div><div class="stop-titles"><div class="name">Pitti Sarayı</div><div class="loc">~13:30 · Piazza de' Pitti</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>15. yüzyılda bankacı Luca Pitti için inşa edilen saray, 1550'lerde Medici ailesi tarafından satın alınarak ana ikametgahları haline getirilmiştir. Devasa, kaba yontulmuş taş cephesi, dönemin diğer zarif Floransa saraylarından kasıtlı olarak farklıdır — güç ve dayanıklılığı vurgular.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Palatine Galerisi'ndeki Raphael ve Titian eserleri — Uffizi kadar kalabalık olmadan büyük ustaları görme fırsatı.</li>
+        <li>Medici ailesinin özel dairelerinin görkemi.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">3</div><div class="stop-titles"><div class="name">Boboli Bahçeleri</div><div class="loc">~15:30 · Pitti Sarayı'nın arkasında</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>16. yüzyılda Medici ailesi için tasarlanan bahçeler, İtalyan bahçe mimarisinin (geometrik düzen, heykeller, su oyunları) en önemli örneklerinden biridir ve sonraki Avrupa saray bahçelerine (Versay dahil) ilham vermiştir.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Amfiteatr bölümü — antik Roma amfitiyatrolarından esinlenerek tasarlanmıştır.</li>
+        <li>Yukarı çıkan yollardan şehre ve Duomo kubbesine açılan manzara noktaları.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>Süre:</b> 1-1.5 saat. Rahat ayakkabı önerilir, park yokuşludur.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">4</div><div class="stop-titles"><div class="name">San Miniato al Monte & Piazzale Michelangelo</div><div class="loc">~18:00</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Öneri</h4>
+      <p>Boboli Bahçeleri zaten nehrin güney yakasında — buradan kısa bir yürüyüşle (veya Forte di Belvedere üzerinden) San Miniato al Monte ve Piazzale Michelangelo'ya çıkabilirsiniz. Romanesk mimarinin güzel bir örneği olan San Miniato, Piazzale'ye göre çok daha az kalabalıktır.</p>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Bu ikinci gün batımı ilkinden farklı bir açıdan, biraz daha yükseklerden görülür. Akşam yemeği için dönüşte Oltrarno/San Niccolò bölgesi uygun.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FIRENZE GÜN 4 — VENEDİK ================= -->
+<section class="day-panel" id="f4" style="display:none;">
+  <div class="day-title">Günübirlik Venedik</div>
+  <div class="day-note"><b>16 Temmuz Perşembe</b><br><b style="color:var(--brick);">Not:</b> Floransa-Venedik arası metro bağlantısı yoktur — yüksek hızlı <b>tren</b> (Frecciarossa/Italo) ile Santa Maria Novella'dan Venezia Santa Lucia'ya ~2 saat. Günübirlik yapılabilir ama uzun bir gün olur; sabah erken (07:00-08:00 civarı) bir trenle gidip akşam 18:00-19:00 treniyle dönmenizi öneririz. Venedik'te araç yoktur, her yer yürüyerek veya vaporetto (su otobüsü) ile gezilir.</div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">1</div><div class="stop-titles"><div class="name">Grand Canal Yürüyüşü</div><div class="loc">Santa Lucia İstasyonu'ndan itibaren</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Tren istasyonundan çıkar çıkmaz karşınıza Grand Canal çıkar — Venedik'in ana su yolu, şehrin adeta bel kemiği.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Ponte degli Scalzi — istasyonun hemen önündeki köprü, kanalın ilk manzara noktası.</li>
+        <li>İsterseniz San Marco'ya kadar bir vaporetto hattı (1 numaralı hat) ile kanalın tamamını, saraylar boyunca izleyebilirsiniz — ayakta yolculuk turistik gondol turundan çok daha ucuzdur.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">2</div><div class="stop-titles"><div class="name">Rialto Köprüsü</div><div class="loc">Grand Canal üzerinde</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Grand Canal üzerindeki dört köprüden en eskisi ve en ünlüsü (1591). Yüzyıllar boyunca kanalı geçmenin tek yoluydu.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Köprünün üzerindeki iki sıra küçük dükkan — ortaçağdan beri ticaret merkezi.</li>
+        <li>Köprünün her iki yakasındaki Rialto Pazarı — sabah saatlerinde taze balık ve sebze pazarı olarak hâlâ faal.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">3</div><div class="stop-titles"><div class="name">Piazza San Marco & Bazilika</div><div class="loc">Venedik'in kalbi</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Tarihçe</h4>
+      <p>Napolyon'un "Avrupa'nın en güzel salonu" dediği meydan, yüzyıllarca Venedik Cumhuriyeti'nin siyasi ve dini merkeziydi. Bazilika'nın Bizans tarzı altın mozaikleri, Venedik'in Doğu ile Batı arasındaki tarihi konumunu yansıtır.</p>
+      <h4>Neye Dikkat Edin</h4>
+      <ul>
+        <li>Bazilika'nın cephesindeki dört bronz at heykeli — 4. Haçlı Seferi'nde Konstantinopolis'ten getirilmiştir (şu an gördükleriniz kopyadır, orijinalleri içeride).</li>
+        <li>Campanile (çan kulesi) — ücretli asansörle çıkılabilen, meydana ve laguna hakim manzara noktası.</li>
+        <li>Doge Sarayı'nın pembe-beyaz baklava desenli cephesi — Venedik Gotik mimarisinin simgesi.</li>
+      </ul>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Bazilika'ya giriş ücretsizdir ama sıra uzun olabilir; online "skip-the-line" rezervasyonu düşünebilirsiniz. Çanta/sırt çantası içeri alınmaz, yakındaki emanetçiye bırakmanız gerekir.</div>
+    </div>
+  </div>
+
+  <div class="stop-card">
+    <div class="stop-head"><div class="stop-num">4</div><div class="stop-titles"><div class="name">Ara Sokaklarda Kaybolmak</div><div class="loc">Öğleden sonra</div></div><div class="chevron">▾</div></div>
+    <div class="stop-body">
+      <h4>Öneri</h4>
+      <p>Venedik'in en güzel yanı haritasız yürümektir — San Marco'dan Dorsoduro veya Cannaregio yönüne dalın, dar sokaklar ve küçük köprüler sizi şaşırtıcı meydanlara çıkarır. Akşam treninize yetişmek için dönüş yolunuzu zamanlayın; Santa Lucia İstasyonu'na San Marco'dan yürüyerek ~20-25 dakika.</p>
+      <div class="tip-badge">Pratik Bilgi</div>
+      <div class="practical"><b>İpucu:</b> Dönüş treninizi mümkünse önceden alın — akşam saatlerinde özellikle yaz aylarında son dakika bilet bulmak zorlaşabilir.</div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>Roma & Firenze · Rehbersiz Gezi Notları</footer>
+
+<script>
+  // City tab switching
+  const cityBtns = document.querySelectorAll('.city-tabs button');
+  const stripRoma = document.getElementById('dayStripRoma');
+  const stripFirenze = document.getElementById('dayStripFirenze');
+  const romaDays = ['r1','r2','r3'];
+  const firenzeDays = ['f1','f2','f3','f4'];
+
+  function showDay(id){
+    document.querySelectorAll('.day-panel').forEach(p=>{
+      if(p.id===id){ p.style.display='block'; p.classList.add('active'); }
+      else { p.style.display='none'; p.classList.remove('active'); }
+    });
+  }
+
+  cityBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      cityBtns.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      if(btn.dataset.city==='roma'){
+        stripRoma.style.display='flex';
+        stripFirenze.style.display='none';
+        stripRoma.querySelectorAll('.day-chip').forEach((c,i)=>c.classList.toggle('active', i===0));
+        showDay('r1');
+      } else {
+        stripFirenze.style.display='flex';
+        stripRoma.style.display='none';
+        stripFirenze.querySelectorAll('.day-chip').forEach((c,i)=>c.classList.toggle('active', i===0));
+        showDay('f1');
+      }
+    });
+  });
+
+  document.querySelectorAll('.day-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const parent = chip.parentElement;
+      parent.querySelectorAll('.day-chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      showDay(chip.dataset.day);
+    });
+  });
+
+  // Accordion
+  document.querySelectorAll('.stop-head').forEach(head=>{
+    head.addEventListener('click', ()=>{
+      head.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Open first stop of each visible day by default
+  document.querySelectorAll('.day-panel .stop-card').forEach((card,i)=>{
+    const panel = card.closest('.day-panel');
+    const firstInPanel = panel.querySelector('.stop-card');
+    if(card===firstInPanel){ card.classList.add('open'); }
+  });
+</script>
+
+</body>
+</html>
